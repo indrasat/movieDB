@@ -37,6 +37,7 @@ struct ContentView: View {
                 NavigationLink(destination: FavouriteView()){
                     Image(systemName: K.Status.favourite.rawValue)
                 }
+                .accessibility(identifier: K.heartIcon)
             )
         }
         .onAppear(){

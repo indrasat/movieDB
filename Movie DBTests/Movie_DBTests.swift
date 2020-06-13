@@ -7,28 +7,161 @@
 //
 
 import XCTest
+import Moya
 @testable import Movie_DB
 
+
 class Movie_DBTests: XCTestCase {
-
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    
+    var stubbingProvider : MoyaProvider<MovieDBService>!
+    
+    override func setUp() {
+        super.setUp()
+        
+        stubbingProvider =  MoyaProvider<MovieDBService>(endpointClosure: customEndpointClosure, stubClosure: MoyaProvider.immediatelyStub, plugins: [NetworkLoggerPlugin()])
     }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    
+    
+    func customEndpointClosure(_ target: MovieDBService) -> Endpoint {
+        return Endpoint(url: URL(target: target).absoluteString,
+                        sampleResponseClosure: { .networkResponse(200, target.sampleData) },
+                        method: target.method,
+                        task: target.task,
+                        httpHeaderFields: target.headers)
     }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    
+    
+    func testPopularMovies() {
+        
+        stubbingProvider.request(.popular) { result in
+            
+            switch result {
+            case let .success(moyaResponse):
+                do{
+                    let results = try JSONDecoder().decode(MovieAPIResults.self, from: moyaResponse.data)
+                    self.waitForExpectations(timeout: 5) { (error) in
+                        XCTAssertNotNil(results.movies)
+                    }
+                }catch let err{
+                    print(err)
+                }
+                
+            case let .failure(moyaError):
+                XCTFail("There's an error, \(moyaError)")
+            }
+        }
+        
     }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    
+    
+    func testUpComingMovies() {
+        
+        stubbingProvider.request(.upcoming) { result in
+            
+            switch result {
+            case let .success(moyaResponse):
+                do{
+                    let results = try JSONDecoder().decode(MovieAPIResults.self, from: moyaResponse.data)
+                    self.waitForExpectations(timeout: 5) { (error) in
+                        XCTAssertNotNil(results.movies)
+                    }
+                }catch let err{
+                    print(err)
+                }
+                
+            case let .failure(moyaError):
+                XCTFail("There's an error, \(moyaError)")
+            }
+        }
+        
+    }
+    
+    
+    func testTopRatingMovies() {
+        
+        stubbingProvider.request(.topRated) { result in
+            
+            switch result {
+            case let .success(moyaResponse):
+                do{
+                    let results = try JSONDecoder().decode(MovieAPIResults.self, from: moyaResponse.data)
+                    self.waitForExpectations(timeout: 5) { (error) in
+                        XCTAssertNotNil(results.movies)
+                    }
+                }catch let err{
+                    print(err)
+                }
+                
+            case let .failure(moyaError):
+                XCTFail("There's an error, \(moyaError)")
+            }
+        }
+        
+    }
+    
+    func testNowPlayingMovies() {
+        
+        stubbingProvider.request(.nowPlaying) { result in
+            
+            switch result {
+            case let .success(moyaResponse):
+                do{
+                    let results = try JSONDecoder().decode(MovieAPIResults.self, from: moyaResponse.data)
+                    self.waitForExpectations(timeout: 5) { (error) in
+                        XCTAssertNotNil(results.movies)
+                    }
+                }catch let err{
+                    print(err)
+                }
+                
+            case let .failure(moyaError):
+                XCTFail("There's an error, \(moyaError)")
+            }
         }
     }
-
+    
+    func testReviews() {
+        stubbingProvider.request(.reviews(id: 297761)) { result in
+            
+            switch result {
+            case let .success(moyaResponse):
+                do{
+                    let results = try JSONDecoder().decode(ReviewAPIResults.self, from: moyaResponse.data)
+                    self.waitForExpectations(timeout: 5) { (error) in
+                        XCTAssertNotNil(results.reviews)
+                    }
+                }catch let err{
+                    print(err)
+                }
+                
+            case let .failure(moyaError):
+                XCTFail("There's an error, \(moyaError)")
+            }
+        }
+    }
+    
+    func testMovieDetail(){
+        let expectation = self.expectation(description: "request")
+        stubbingProvider.request(.detail(id: 550)) { result in
+            switch result {
+            case let .success(moyaResponse):
+                do{
+                    let movie = try JSONDecoder().decode(Movie.self, from: moyaResponse.data)
+                    XCTAssertNotNil(movie)
+                }catch let err {
+                    print(err)
+                }
+            case let .failure(moyaError):
+                print("There's an error, \(moyaError)")
+            }
+            expectation.fulfill()
+        }
+        self.waitForExpectations(timeout: 5.0){ error in
+            if let error = error {
+                XCTFail("timeout errored: \(error)")
+            }
+        }
+        
+    }
+    
 }

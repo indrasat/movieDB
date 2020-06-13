@@ -39,7 +39,7 @@ struct DetailView: View {
                             Button(action: {self.onFavouriteButtonPressed()}) {
                                 Image(systemName: favouriteImage)
                                     .frame(width:30, height: 30, alignment: .leading)
-                            }
+                            }.accessibility(identifier: K.heartIcon)
                         }
                         Text(self.detailViewModel.movie.formatedReleaseDate)
                             .font(.system(size: 15)).bold()
